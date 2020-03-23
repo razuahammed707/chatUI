@@ -3,7 +3,7 @@ let rating = "";
 
 
 if(!getAllUrlParams().userid){
-  alert("Please provide the user parameter")
+  alert("Please provide the user parameter in url")
 }
 
 
@@ -34,7 +34,7 @@ const convertRating=(data)=>{
 }
 
 const sendToRasa = async (data)=>{
-  const rawRes= await fetch("http://localhost:5005/webhooks/rest/webhook", { 
+  const rawRes= await fetch("http://40.70.71.46:5005/webhooks/rest/webhook", { 
           method: "POST", 
           body: JSON.stringify(data), 
   }) ;
