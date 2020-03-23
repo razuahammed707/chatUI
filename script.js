@@ -157,6 +157,8 @@ const printFeedBack=()=>{
 
 
 
+
+
 const RenderBotMessage=(data)=>{
 
   console.log(data)
@@ -209,7 +211,12 @@ const RenderBotMessage=(data)=>{
 
 
 const send_message= async ()=>{
+  let userInput = document.getElementById("userInput").value;
+
   
+    if(userInput==="" &&MultiSelectValue.length===0 ){
+      return userRes("Please select the options")
+    }
     if(rating!=""){
       const res = await sendToRasa({
         "sender":userID,
@@ -234,7 +241,6 @@ const send_message= async ()=>{
     }else{
 
 
-      let userInput = document.getElementById("userInput").value;
       userRes(userInput);
       const res = await sendToRasa({
         "sender":userID,
@@ -245,6 +251,8 @@ const send_message= async ()=>{
 
     }
     return(1)
+    historBox.scrollTop=historBox.scrollHeight
+
 }
 
 const init=async()=>{
@@ -256,6 +264,18 @@ const init=async()=>{
   RenderBotMessage(res)
 
 }
+
+
+const sendStarRating=async()=>{
+
+  userRes(rating);
+  const res = await sendToRasa({
+    "sender":userID,
+    "message":rating
+  });
+  RenderBotMessage(res)
+}
+
 
 function starmark(item)
 {
@@ -275,8 +295,9 @@ else
 document.getElementById((i+1)+subid).style.color="black";
 }
 
-
 }
+
+sendStarRating()
 
 }
 
@@ -298,6 +319,8 @@ function AnotherStar(item){
   document.getElementById((i+1)+subid).style.color="black";
   }
   }
+
+  sendStarRating()
 }
 
 
