@@ -42,6 +42,7 @@ const sendToRasa = async (data)=>{
   return await rawRes.json()
 };
 
+
 const MultiSelectValue=[]
 
 const addData=(item)=>{
@@ -76,6 +77,7 @@ const renderMutiSelect=(data)=>{
     label.append(input);
     history.append(label)
   })
+  sendMutipleButton()
 };
 
 const renderClickAbleBTN=(data)=>{
@@ -100,6 +102,14 @@ const renderClickAbleBTN=(data)=>{
     
     
   })
+}
+
+const sendMutipleButton=()=>{
+  const history = document.getElementById("chatHistory");
+  const p= document.createElement("p");
+  p.className='warning'
+  p.innerHTML="Kindly press Enter after selecting the options"
+  history.append(p)
 }
 
 const printStart=()=>{
@@ -142,18 +152,21 @@ const userRes=(data)=>{
   history.append(container)
 }
 
-const printFeedBack=()=>{
-  let html =`
-  <div class="thankYou">
-      <div class="topLogo">
-                    <img src="http://pro.tuneem.com/cavinsurvey/web/cfsurvey/images/cavinkare-logo.svg">
-      </div>
-    <img src="done.gif"/>
-    <h2>Thank you for your valuable feedback!<br> We sincerely appreciate that you could spend your valuable time in <br> helping make your Just Mine! shampoo, the best ever!</h2>
-  </div>
-  `
-  document.getElementById("mainContainer").innerHTML=html
+const printFeedBack=(time=0)=>{
+  setTimeout(()=>{
+    let html =`
+    <div class="thankYou">
+        <div class="topLogo">
+                      <img src="http://pro.tuneem.com/cavinsurvey/web/cfsurvey/images/cavinkare-logo.svg">
+        </div>
+      <img src="done.gif"/>
+      <h2>Thank you for your valuable feedback!<br> We sincerely appreciate that you could spend your valuable time in <br> helping make your Just Mine! shampoo, the best ever!</h2>
+    </div>
+    `
+    document.getElementById("mainContainer").innerHTML=html
+  },time)
 }
+
 
 
 
@@ -162,21 +175,22 @@ const printFeedBack=()=>{
 const RenderBotMessage=(data)=>{
 
   console.log(data)
+  let botData=data
 
   if(data[0].text=="Highly delighted to hear that!"){
     localStorage.setItem("userStatus",true);
-    printFeedBack()
-
+    botData=[{text:"Highly delighted to hear that!"}]
+    printFeedBack(1000)
   }
-
-  if(data[0].text=="Thank you for your valuable feedback! We sincerely appreciate that you could spend your valuable time in helping make your Just Mine! shampoo, the best ever!"){
+  if(data[0].text==="notThanks"){
     localStorage.setItem("userStatus",true);
-    printFeedBack()
-
+    return printFeedBack()
   }
+ 
 
-  if(data){
-    data.map(item=>{
+
+  if(botData){
+    botData.map(item=>{
       const history = document.getElementById("chatHistory");
       const botReply = document.createElement("p");
       const botMsgContainer = document.createElement("div");
@@ -199,6 +213,9 @@ const RenderBotMessage=(data)=>{
         }else if(item.buttons.length===2){
           renderClickAbleBTN(item.buttons)
         }
+        else if(item.buttons.length===1){
+          renderClickAbleBTN(item.buttons)
+        }
       };
     })
   }
@@ -212,24 +229,26 @@ const RenderBotMessage=(data)=>{
 
 const send_message= async ()=>{
   let userInput = document.getElementById("userInput").value;
+  const historBox = document.getElementById("chatHistory");
 
   
-    if(userInput==="" &&MultiSelectValue.length===0 ){
-      return userRes("Please select the options")
+    if(userInput==="" &&MultiSelectValue.length===0 && rating==="" ){
+      return userRes("Kindly enter a valid response")
     }
-    if(rating!=""){
+
+    if(rating!="" && rating!=null){
       const res = await sendToRasa({
         "sender":userID,
         "message":rating
       });
-      userRes(rating)
+      // userRes(rating)
       RenderBotMessage(res)
       rating=""
       return(1)
 
     }if(MultiSelectValue.length!=0){
 
-      userRes(MultiSelectValue.toString());
+      userRes(`You have selected: ${MultiSelectValue.join(", ")}.`);
       const res = await sendToRasa({
         "sender":userID,
         "message":MultiSelectValue.toString()
@@ -240,7 +259,6 @@ const send_message= async ()=>{
 
     }else{
 
-
       userRes(userInput);
       const res = await sendToRasa({
         "sender":userID,
@@ -250,8 +268,8 @@ const send_message= async ()=>{
       document.getElementById("userInput").value=""
 
     }
-    return(1)
     historBox.scrollTop=historBox.scrollHeight
+    return(1)
 
 }
 
@@ -268,42 +286,53 @@ const init=async()=>{
 
 const sendStarRating=async()=>{
 
-  userRes(rating);
-  const res = await sendToRasa({
-    "sender":userID,
-    "message":rating
-  });
-  RenderBotMessage(res)
-}
+  console.log("sending")
 
-
-function starmark(item)
-{
-count=item.id[0];
-rating=convertRating(count);
-
-sessionStorage.starRating = count;
-var subid= item.id.substring(1);
-for(var i=0;i<5;i++)
-{
-if(i<count)
-{
-document.getElementById((i+1)+subid).style.color="orange";
-}
-else
-{
-document.getElementById((i+1)+subid).style.color="black";
-}
-
-}
-
-sendStarRating()
-
-}
-
-function AnotherStar(item){
+  if(rating!=null){
+      // userRes(rating);
+      const res = await sendToRasa({
+        "sender":userID,
+        "message":rating
+      });
+      RenderBotMessage(res)
+  }
   
-  count=item.id[0];
+
+}
+
+let startClickCount=1;
+
+function starmark(item){
+
+  
+  if(startClickCount===1){
+        console.log("one time")
+        count=item.id[0];
+        rating=convertRating(count);
+
+        sessionStorage.starRating = count;
+        var subid= item.id.substring(1);
+        for(var i=0;i<5;i++){
+          if(i<count){
+          document.getElementById((i+1)+subid).style.color="orange";
+          }else{
+        // document.getElementById((i+1)+subid).style.color="transparent";
+          }
+        }
+          sendStarRating()
+          startClickCount=2;
+        return;
+  }else{
+    console.log("many time")
+    rating=null
+    return;
+  }
+}
+
+let AnotherStarClickCout=1;
+function AnotherStar(item){
+  if(AnotherStarClickCout==1){
+    count=item.id[0];
   rating=item.id;
 
   sessionStorage.starRating = count;
@@ -316,11 +345,15 @@ function AnotherStar(item){
   }
   else
   {
-  document.getElementById((i+1)+subid).style.color="black";
+  // document.getElementById((i+1)+subid).style.color="black";
   }
   }
 
   sendStarRating()
+  AnotherStarClickCout++;
+  }else{
+    rating==null
+  }
 }
 
 
