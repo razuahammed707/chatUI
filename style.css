@@ -120,7 +120,8 @@ p,h1,label{
     direction: rtl;
 }
 .userRes p {
-    text-align: right;
+    text-align: left;
+    max-width: 560px;
     display: inline-block;
     background: #5B88B1;
     padding: 10px 30px;

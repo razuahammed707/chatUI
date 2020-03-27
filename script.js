@@ -184,6 +184,7 @@ const RenderBotMessage=(data)=>{
   }
   if(data[0].text==="notThanks"){
     localStorage.setItem("userStatus",true);
+    data[0].text=""
     return printFeedBack()
   }
  
